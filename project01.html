@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Responsive Landing Page — Interactive Nav</title>
+    <meta name="description"
+        content="Beautiful responsive landing page with fixed interactive navigation that changes on scroll and hover." />
+    <style>
+        :root {
+            --bg: #0f1724;
+            /* deep navy */
+            --card: #0b1220;
+            --muted: #9aa6b2;
+            --accent: #06b6d4;
+            /* cyan */
+            --accent-2: #7c3aed;
+            /* purple */
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-strong: rgba(255, 255, 255, 0.06);
+            --radius: 14px;
+            --max-w: 1200px;
+            --transition: 300ms cubic-bezier(.2, .9, .3, 1);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background: linear-gradient(180deg, #071029 0%, #071224 60%);
+            color: #e6eef6
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        /* ---------- NAV ---------- */
+        .nav-wrap {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 48px);
+            max-width: var(--max-w);
+            z-index: 60
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--glass);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 6px 30px rgba(2, 6, 23, 0.6);
+            transition: var(--transition)
+        }
+
+        nav.scrolled {
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.12), rgba(124, 58, 237, 0.06));
+            box-shadow: 0 12px 40px rgba(3, 6, 20, 0.7);
+            transform: translateY(-2px) scale(0.998)
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: grid;
+            place-items: center;
+            font-weight: 700
+        }
+
+        .brand h1 {
+            font-size: 16px;
+            margin: 0
+        }
+
+        .brand p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .menu {
+            display: flex;
+            gap: 18px;
+            align-items: center
+        }
+
+        .menu a {
+            padding: 8px 12px;
+            border-radius: 10px;
+            position: relative;
+            transition: var(--transition);
+            color: rgba(230, 238, 246, 0.95)
+        }
+
+        .menu a:hover {
+            transform: translateY(-3px)
+        }
+
+        .menu a::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 6px;
+            width: 0;
+            height: 3px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            transition: width 220ms
+        }
+
+        .menu a:hover::after {
+            width: 60%
+        }
+
+        .menu a.active {
+            font-weight: 600
+        }
+
+        .menu a.active::after {
+            width: 80%
+        }
+
+        .cta {
+            margin-left: 6px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #021024;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(7, 22, 38, 0.6)
+        }
+
+        /* hamburger mobile */
+        .hamburger {
+            display: none;
+            gap: 6px;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px
+        }
+
+        .hamburger span {
+            width: 20px;
+            height: 2px;
+            background: #e6eef6;
+            border-radius: 2px;
+            display: block
+        }
+
+        /* ---------- HERO ---------- */
+        .container {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            padding: 120px 24px 48px
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            gap: 36px;
+            align-items: center
+        }
+
+        .hero-left h2 {
+            font-size: 42px;
+            margin: 0 0 12px;
+            line-height: 1.03
+        }
+
+        .hero-left p {
+            margin: 0 0 20px;
+            color: var(--muted);
+            font-size: 16px
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 14px
+        }
+
+        .btn {
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: var(--glass-strong);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #021024;
+            border: none;
+            box-shadow: 0 12px 30px rgba(7, 22, 38, 0.6)
+        }
+
+        .btn:hover {
+            transform: translateY(-4px)
+        }
+
+        .hero-right {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            min-height: 360px
+        }
+
+        .hero-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .hero-card {
+            position: relative;
+            padding: 18px;
+            z-index: 4
+        }
+
+        .glass-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin: 18px;
+            backdrop-filter: blur(6px)
+        }
+
+        /* ---------- FEATURES ---------- */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin: 42px 0
+        }
+
+        .feature {
+            background: var(--card);
+            padding: 18px;
+            border-radius: 12px
+        }
+
+        .feature h4 {
+            margin: 0 0 8px
+        }
+
+        .feature p {
+            margin: 0;
+            color: var(--muted)
+        }
+
+        /* ---------- GALLERY ---------- */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 36px 0
+        }
+
+        .gallery img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 10px
+        }
+
+        /* ---------- CONTACT / FOOTER ---------- */
+        .contact {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            margin: 48px 0;
+            padding: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
+            border-radius: 12px
+        }
+
+        .form input,
+        .form textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            background: transparent;
+            color: inherit;
+            margin-bottom: 8px
+        }
+
+        footer {
+            margin-top: 28px;
+            color: var(--muted);
+            font-size: 14px;
+            padding: 20px 0
+        }
+
+        /* responsive */
+        @media (max-width:980px) {
+            .hero {
+                grid-template-columns: 1fr 360px
+            }
+
+            .features {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .gallery {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        @media (max-width:720px) {
+            nav {
+                padding: 8px
+            }
+
+            .nav-wrap {
+                top: 10px
+            }
+
+            .menu {
+                display: none
+            }
+
+            .hamburger {
+                display: flex
+            }
+
+            .hero {
+                grid-template-columns: 1fr
+            }
+
+            .hero-right {
+                order: 2
+            }
+
+            .container {
+                padding-top: 80px
+            }
+
+            .features {
+                grid-template-columns: 1fr
+            }
+
+            .gallery {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .contact {
+                grid-template-columns: 1fr
+            }
+        }
+
+        /* mobile slide menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 320px;
+            max-width: 85%;
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.95), rgba(6, 10, 20, 0.98));
+            transform: translateX(110%);
+            transition: transform 320ms;
+            z-index: 80;
+            padding: 40px 20px
+        }
+
+        .mobile-menu.open {
+            transform: translateX(0)
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--muted)
+        }
+
+        /* subtle animated accent */
+        .highlight {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.06), rgba(124, 58, 237, 0.04));
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            font-weight: 700
+        }
+
+        /* accessibility focus */
+        a:focus,
+        button:focus,
+        input:focus,
+        textarea:focus {
+            outline: 3px solid rgba(6, 182, 212, 0.12);
+            outline-offset: 3px
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav-wrap">
+        <nav id="mainNav" aria-label="Main Navigation">
+            <div class="brand">
+                <div class="logo" aria-hidden>SL</div>
+                <div>
+                    <h1>Setu Labs</h1>
+                    <p>Design • Web • Motion</p>
+                </div>
+            </div>
+
+            <div class="menu" id="menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#gallery" class="nav-link">Gallery</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="#" class="cta">Get Started</a>
+            </div>
+
+            <div class="hamburger" id="hamburger" aria-label="Open menu" role="button" tabindex="0">
+                <span></span><span></span><span></span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MOBILE MENU -->
+    <aside class="mobile-menu" id="mobileMenu" aria-hidden="true">
+        <a href="#home" class="mobile-link">Home</a>
+        <a href="#features" class="mobile-link">Features</a>
+        <a href="#gallery" class="mobile-link">Gallery</a>
+        <a href="#contact" class="mobile-link">Contact</a>
+        <div style="margin-top:18px"><button class="btn primary" style="width:100%">Start Free</button></div>
+    </aside>
+
+    <main>
+        <section id="home" class="container hero">
+            <div class="hero-left">
+                <h2>Build stunning websites — fast, responsive, delightful.</h2>
+                <p>Create modern landing pages with polished interactions, accessibility, and lightning fast
+                    performance. Includes video hero, gallery, and interactive navigation that reacts to scroll & hover.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn primary">Start a Project</button>
+                    <button class="btn">View Docs</button>
+                </div>
+
+                <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+                    <div class="glass-card">
+                        <div
+                            style="width:56px;height:56px;border-radius:8px;background:linear-gradient(90deg,var(--accent)
+                            ,var(--accent-2));display:grid;place-items:center;font-weight:700">
+                            S</div>
+                        <div>
+                            <div style="font-weight:700">Trusted by teams</div>
+                            <div style="color:var(--muted);font-size:13px">Used in 150+ launches</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-right" aria-hidden="true">
+                <!-- Background video for hero (muted autoplay loop) -->
+                <video class="hero-video" autoplay muted loop playsinline
+                    poster="https://images.unsplash.com/photo-1506765515384-028b60a970df?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder">
+                    <source
+                        src="https://cdn.coverr.co/videos/coverr-a-creative-workspace-1596?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+                        type="video/mp4">
+                    <!-- fallback image -->
+                </video>
+
+                <div class="hero-card">
+                    <div class="glass-card">
+                        <div style="flex:1">
+                            <div style="font-weight:700">Interactive nav</div>
+                            <div style="color:var(--muted);font-size:13px">Changes color on scroll, highlights active
+                                section, and has a mobile menu.</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-weight:800; font-size:20px">✨</div>
+                        </div>
+                    </div>
+
+                    <div style="margin:18px">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                            alt="screenshot" style="width:100%;border-radius:10px;display:block">
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="features" class="container">
+            <h3 style="margin:0 0 12px">Features</h3>
+            <p style="margin:0 0 18px;color:var(--muted)">Everything you need for a beautiful landing page.</p>
+
+            <div class="features">
+                <div class="feature">
+                    <h4>Responsive & Mobile-first</h4>
+                    <p>Layouts adapt from mobile to wide screens with accessible markup and keyboard-friendly
+                        navigation.</p>
+                </div>
+                <div class="feature">
+                    <h4>Smooth Interactions</h4>
+                    <p>Hover, focus, and scroll animations are subtle and performant.</p>
+                </div>
+                <div class="feature">
+                    <h4>Media-rich</h4>
+                    <p>Support for background video, image galleries and embedded content (YouTube, Vimeo).</p>
+                </div>
+            </div>
+
+            <div style="margin-top:16px">
+                <div class="gallery" id="gallery">
+                    <img src="https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                        alt="gallery1">
+                    <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                        alt="gallery2">
+                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                        alt="gallery3">
+                    <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                        alt="gallery4">
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="container">
+            <h3 style="margin:0 0 12px">Contact</h3>
+            <div class="contact">
+                <div>
+                    <p style="color:var(--muted)">Got an idea? Drop a quick message and we’ll get back to you.</p>
+                    <div style="display:flex;gap:12px;margin-top:12px">
+                        <div style="padding:14px;border-radius:10px;background:var(--card);flex:1">
+                            <strong>Email</strong>
+                            <div style="color:var(--muted);font-size:13px">hello@setulabs.example</div>
+                        </div>
+                        <div
+                            style="padding:14px;border-radius:10px;background:var(--card);width:180px;text-align:center">
+                            <strong>Office</strong>
+                            <div style="color:var(--muted);font-size:13px">Mumbai, India</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="form" style="background:transparent;padding:6px">
+                    <input type="text" placeholder="Your name" required />
+                    <input type="email" placeholder="Email" required />
+                    <textarea rows="4" placeholder="How can we help?" required></textarea>
+                    <button class="btn primary" type="submit">Send message</button>
+                </form>
+            </div>
+
+            <footer>
+                <div
+                    style="max-width:var(--max-w);margin:12px auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap">
+                    <div>© <strong>Setu Labs</strong> 2025 • Built with ❤️</div>
+                    <div style="color:var(--muted)">Follow: Twitter • Dribbble • GitHub</div>
+                </div>
+            </footer>
+        </section>
+    </main>
+
+    <script>
+        // Grab elements
+        const nav = document.getElementById('mainNav');
+        const links = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('main section');
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        // Toggle mobile menu
+        function toggleMobile(open) {
+            mobileMenu.classList.toggle('open', open);
+            mobileMenu.setAttribute('aria-hidden', String(!open));
+        }
+        hamburger.addEventListener('click', () => toggleMobile(true));
+        document.addEventListener('click', (e) => {
+            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) toggleMobile(false);
+        });
+        // allow esc to close
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleMobile(false); });
+
+        // Mobile links close menu
+        document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', () => toggleMobile(false)));
+
+        // Change nav appearance on scroll
+        function onScroll() {
+            if (window.scrollY > 80) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', (e) => {
+                const href = a.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const dest = document.querySelector(href);
+                    if (dest) dest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            })
+        })
+
+        // IntersectionObserver to set active nav link
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const id = entry.target.id;
+                const link = document.querySelector('.nav-link[href="#' + id + '"]');
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+                    if (link) link.classList.add('active');
+                }
+            })
+        }, { threshold: 0.45 });
+        sections.forEach(s => io.observe(s));
+
+        // Small accessibility: space/enter on hamburger
+        hamburger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMobile(true); }
+        });
+
+        // Form submit demo (no network) - show tiny success state
+        document.querySelector('.form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.textContent = 'Sent ✓';
+            btn.disabled = true;
+            setTimeout(() => { btn.textContent = 'Send message'; btn.disabled = false; e.target.reset(); }, 1500);
+        });
+    </script>
+</body>
+
+</html>
