@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stopwatch — Web App</title>
+  <style>
+    :root{
+      --bg:#0f172a; /* slate-900 */
+      --panel:#111827ee; /* gray-900 */
+      --text:#e5e7eb; /* gray-200 */
+      --muted:#9ca3af; /* gray-400 */
+      --accent:#22c55e; /* green-500 */
+      --accent-2:#3b82f6; /* blue-500 */
+      --danger:#ef4444; /* red-500 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1000px 600px at 20% 10%, #1e293b 0%, #0b1223 50%, #070d1a 100%);
+      color:var(--text); display:grid; place-items:center; padding:24px;
+    }
+    .app{width: min(900px, 96vw);}
+
+    .card{
+      background: linear-gradient(180deg, #0b1223 0%, #0e1426 100%);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header{
+      padding: 20px 24px; display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    header h1{margin:0; font-size: clamp(18px, 2.4vw, 22px); letter-spacing:.4px}
+    header .hint{font-size: 12px; color: var(--muted)}
+
+    .timer{
+      padding: 28px; display:grid; gap: 24px; place-items:center;
+    }
+    .display{
+      font-variant-numeric: tabular-nums; letter-spacing: .5px;
+      font-weight: 700; text-align:center;
+      font-size: clamp(40px, 9vw, 84px);
+    }
+    .sub{color: var(--muted); font-size: clamp(12px, 2.2vw, 14px)}
+
+    .controls{display:flex; flex-wrap:wrap; gap:12px; justify-content:center}
+    button{
+      appearance:none; border:none; cursor:pointer; user-select:none;
+      padding: 12px 18px; border-radius: 999px; font-weight:600;
+      background:#111827; color:var(--text); border:1px solid rgba(255,255,255,.08);
+      transition: transform .06s ease, background .2s ease, border-color .2s ease, opacity .2s ease;
+    }
+    button:hover{transform: translateY(-1px)}
+    button:active{transform: translateY(0)}
+    button.primary{background: var(--accent); color:#04130a; border-color: transparent}
+    button.secondary{background: #0b1734; border-color: rgba(59,130,246,.6)}
+    button.danger{background: #2a0c0e; border-color: rgba(239,68,68,.6)}
+    button:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+    .laps{
+      border-top:1px solid rgba(255,255,255,.06);
+      background: linear-gradient(180deg, rgba(17,24,39,.5) 0%, rgba(11,17,31,.35) 100%);
+      max-height: 40vh; overflow:auto;
+    }
+    .lap-head, .lap-item{
+      display:grid; grid-template-columns: 80px 1fr 1fr; gap:8px; align-items:center; padding: 12px 16px;
+    }
+    .lap-head{position:sticky; top:0; backdrop-filter: blur(6px); background: rgba(10,16,29,.8); border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; color:var(--muted)}
+    .lap-item{font-variant-numeric: tabular-nums; border-bottom:1px dashed rgba(255,255,255,.06)}
+    .lap-item:nth-child(odd){background: rgba(255,255,255,.01)}
+    .empty{padding: 16px; color:var(--muted); text-align:center}
+
+    .footer-note{padding: 14px 18px; font-size:12px; color:var(--muted); text-align:center}
+
+    /* Scrollbar tweaks */
+    .laps::-webkit-scrollbar{height:10px;width:10px}
+    .laps::-webkit-scrollbar-thumb{background:#263042;border-radius:999px}
+    .laps::-webkit-scrollbar-track{background:transparent}
+
+    @media (max-width: 560px){
+      .lap-head, .lap-item{grid-template-columns: 56px 1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app card" role="application" aria-label="Stopwatch Application">
+    <header>
+      <h1>⏱️ Stopwatch</h1>
+      <div class="hint">Space = Start/Pause · L = Lap · R = Reset</div>
+    </header>
+
+    <section class="timer">
+      <div class="display" id="display" aria-live="polite" aria-atomic="true">00:00:00.000</div>
+      <div class="controls" role="group" aria-label="Controls">
+        <button id="startPauseBtn" class="primary" aria-pressed="false">Start</button>
+        <button id="lapBtn" class="secondary" disabled>Lap</button>
+        <button id="resetBtn" class="danger" disabled>Reset</button>
+      </div>
+      <div class="sub" id="status">REDAY</div>
+    </section>
+
+    <section class="laps" aria-label="Lap times">
+      <div class="lap-head">
+        <div>#</div>
+        <div>Lap</div>
+        <div>Total</div>
+      </div>
+      <div id="lapList" class="empty">No laps yet. Press <strong>Lap</strong> while running.</div>
+    </section>
+
+    <div class="footer-note">High‑precision timing via <code>performance.now()</code>. Updates synced with <code>requestAnimationFrame</code>.</div>
+  </div>
+
+  <script>
+    (function(){
+      const display = document.getElementById('display');
+      const startPauseBtn = document.getElementById('startPauseBtn');
+      const lapBtn = document.getElementById('lapBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const lapList = document.getElementById('lapList');
+      const statusEl = document.getElementById('status');
+
+      let running = false;
+      let startTime = 0;      // timestamp when started (perf.now)
+      let elapsed = 0;        // ms accumulated while not running
+      let rafId = null;       // requestAnimationFrame id
+
+      // For laps
+      let laps = [];          // {lapTimeMs, totalMs}
+      let lastLapTotal = 0;   // ms at previous lap
+
+      function formatTime(ms){
+        const hours = Math.floor(ms / 3_600_000);
+        const mins = Math.floor((ms % 3_600_000) / 60_000);
+        const secs = Math.floor((ms % 60_000) / 1000);
+        const millis = Math.floor(ms % 1000);
+        const hh = String(hours).padStart(2,'0');
+        const mm = String(mins).padStart(2,'0');
+        const ss = String(secs).padStart(2,'0');
+        const mmm = String(millis).padStart(3,'0');
+        return `${hh}:${mm}:${ss}.${mmm}`;
+      }
+
+      function updateDisplay(){
+        const now = performance.now();
+        const total = running ? (now - startTime) : 0;
+        const current = running ? (elapsed + total) : elapsed;
+        display.textContent = formatTime(current);
+        if (running) rafId = requestAnimationFrame(updateDisplay);
+      }
+
+      function start(){
+        if (running) return;
+        running = true;
+        startTime = performance.now();
+        startTime -= elapsed; // resume from paused elapsed
+        rafId && cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(updateDisplay);
+        startPauseBtn.textContent = 'Pause';
+        startPauseBtn.setAttribute('aria-pressed','true');
+        startPauseBtn.classList.remove('primary');
+        startPauseBtn.classList.add('secondary');
+        lapBtn.disabled = false;
+        resetBtn.disabled = false;
+        statusEl.textContent = 'Running…';
+      }
+
+      function pause(){
+        if (!running) return;
+        running = false;
+        const now = performance.now();
+        elapsed += (now - startTime);
+        rafId && cancelAnimationFrame(rafId);
+        startPauseBtn.textContent = 'Start';
+        startPauseBtn.setAttribute('aria-pressed','false');
+        startPauseBtn.classList.remove('secondary');
+        startPauseBtn.classList.add('primary');
+        statusEl.textContent = 'Paused';
+        updateDisplay();
+      }
+
+      function reset(){
+        running = false;
+        startTime = 0; elapsed = 0; lastLapTotal = 0; laps = [];
+        rafId && cancelAnimationFrame(rafId);
+        startPauseBtn.textContent = 'Start';
+        startPauseBtn.setAttribute('aria-pressed','false');
+        startPauseBtn.classList.remove('secondary');
+        startPauseBtn.classList.add('primary');
+        lapBtn.disabled = true; resetBtn.disabled = true;
+        statusEl.textContent = 'Ready';
+        renderLaps();
+        updateDisplay();
+      }
+
+      function lap(){
+        const totalMs = running ? (elapsed + (performance.now() - startTime)) : elapsed;
+        const lapTimeMs = totalMs - lastLapTotal;
+        lastLapTotal = totalMs;
+        laps.unshift({ lapTimeMs, totalMs }); // newest first
+        renderLaps();
+      }
+
+      function renderLaps(){
+        if (!laps.length){
+          lapList.className = 'empty';
+          lapList.innerHTML = 'No laps yet. Press <strong>Lap</strong> while running.';
+          return;
+        }
+        lapList.className = '';
+        lapList.innerHTML = '';
+        // header already fixed above. We only fill items here
+        laps.forEach((l, idx)=>{
+          const row = document.createElement('div');
+          row.className = 'lap-item';
+
+          const n = document.createElement('div');
+          n.textContent = String(laps.length - idx).padStart(2,'0');
+          const lapCol = document.createElement('div');
+          lapCol.textContent = formatTime(l.lapTimeMs);
+          const totCol = document.createElement('div');
+          totCol.textContent = formatTime(l.totalMs);
+
+          row.appendChild(n); row.appendChild(lapCol); row.appendChild(totCol);
+          lapList.appendChild(row);
+        });
+      }
+
+      // Events
+      startPauseBtn.addEventListener('click', ()=> running ? pause() : start());
+      resetBtn.addEventListener('click', reset);
+      lapBtn.addEventListener('click', lap);
+
+      // Keyboard shortcuts
+      window.addEventListener('keydown', (e)=>{
+        if (e.target && ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+        if (e.code === 'Space'){ e.preventDefault(); running ? pause() : start(); }
+        else if (e.key.toLowerCase() === 'l'){ e.preventDefault(); if (!lapBtn.disabled) lap(); }
+        else if (e.key.toLowerCase() === 'r'){ e.preventDefault(); if (!resetBtn.disabled) reset(); }
+      });
+
+      // Initialize
+      updateDisplay();
+    })();
+  </script>
+</body>
+</html>
