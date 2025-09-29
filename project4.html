@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input, button {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li.completed span {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .task-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .date-time {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .actions button {
+      margin-left: 5px;
+      background: #28a745;
+    }
+
+    .actions .delete {
+      background: #dc3545;
+    }
+
+    .actions .edit {
+      background: #ffc107;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📋 To-Do List</h2>
+    <div class="input-group">
+      <input type="text" id="taskInput" placeholder="Enter a task">
+      <input type="datetime-local" id="taskDateTime">
+      <button onclick="addTask()">Add Task</button>
+    </div>
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    function addTask() {
+      let taskInput = document.getElementById("taskInput");
+      let taskDateTime = document.getElementById("taskDateTime");
+      let taskList = document.getElementById("taskList");
+
+      if (taskInput.value === "") {
+        alert("Please enter a task!");
+        return;
+      }
+
+      let li = document.createElement("li");
+
+      let taskInfo = document.createElement("div");
+      taskInfo.className = "task-info";
+
+      let span = document.createElement("span");
+      span.textContent = taskInput.value;
+
+      let dateSpan = document.createElement("span");
+      dateSpan.className = "date-time";
+      dateSpan.textContent = taskDateTime.value ? "⏰ " + taskDateTime.value : "";
+
+      taskInfo.appendChild(span);
+      taskInfo.appendChild(dateSpan);
+
+      let actions = document.createElement("div");
+      actions.className = "actions";
+
+      let completeBtn = document.createElement("button");
+      completeBtn.textContent = "✔";
+      completeBtn.onclick = function() {
+        li.classList.toggle("completed");
+      };
+
+      let editBtn = document.createElement("button");
+      editBtn.textContent = "✏";
+      editBtn.className = "edit";
+      editBtn.onclick = function() {
+        let newTask = prompt("Edit your task:", span.textContent);
+        if (newTask !== null && newTask.trim() !== "") {
+          span.textContent = newTask;
+        }
+      };
+
+      let deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "🗑";
+      deleteBtn.className = "delete";
+      deleteBtn.onclick = function() {
+        li.remove();
+      };
+
+      actions.appendChild(completeBtn);
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      li.appendChild(taskInfo);
+      li.appendChild(actions);
+      taskList.appendChild(li);
+
+      taskInput.value = "";
+      taskDateTime.value = "";
+    }
+  </script>
+</body>
+</html>
